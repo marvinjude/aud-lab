@@ -13,7 +13,7 @@ export interface AudienceMember {
   name: string;
   addedAt: string;
   status: "active" | "inactive";
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface AudienceListsResponse {
