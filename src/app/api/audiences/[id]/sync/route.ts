@@ -73,13 +73,18 @@ async function syncAudience(
     member.email,
   ]);
 
+  /**
+   * See API docs on what session means: https://developers.facebook.com/docs/marketing-api/audiences/guides/custom-audiences/#payload-fields
+   * You'll need to keep track of the session ID yourself if you're doing this in batches.
+   */
+
   const payload = {
     audienceId: fbAudienceId,
     data: audienceMembersData,
     session: {
-      id: sessionId.toString(),
-      batchSeq: 1,
-      lastBatchFlag: true,
+      id: sessionId.toString(), // Unique identifier for the session
+      batchSeq: 1, // Sequence number of the batch
+      lastBatchFlag: true, // Indicates if this is the last batch of data
     },
   };
 

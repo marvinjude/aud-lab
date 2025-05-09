@@ -2,8 +2,12 @@ import { NextResponse } from "next/server";
 import { Audience } from "@/models/audience";
 import { APIHandler } from "@/lib/api-middleware";
 import type { AuthCustomer } from "@/lib/auth";
+import { seedAudiencesAndMembers } from "@/seed";
 
 async function getAudiences() {
+  // seed db
+  seedAudiencesAndMembers();
+
   const audiences = await Audience.find({}).sort({
     createdAt: -1,
   });
