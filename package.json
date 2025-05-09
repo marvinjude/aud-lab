@@ -7,7 +7,8 @@
     "seed": "tsx src/seed.ts",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@integration-app/react": "^2.1.3",

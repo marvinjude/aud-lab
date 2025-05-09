@@ -1,6 +1,5 @@
 import { Audience } from "@/models/audience";
 import { AudienceMember } from "@/models/audience-member";
-import { DataOrigin } from "@/models/common";
 import mongoose from "mongoose";
 
 const sampleAudiences = [
@@ -8,19 +7,16 @@ const sampleAudiences = [
     name: "VIP Customers",
     description: "High-value customers with premium status",
     memberCount: 0,
-    origin: DataOrigin.APP,
   },
   {
     name: "Newsletter Subscribers",
     description: "Regular newsletter subscribers",
     memberCount: 0,
-    origin: DataOrigin.APP,
   },
   {
     name: "Beta Testers",
     description: "Early adopters and beta program participants",
     memberCount: 0,
-    origin: DataOrigin.APP,
   },
 ];
 
