@@ -3,6 +3,7 @@
 import { notFound, useParams } from "next/navigation";
 import { AudienceMembersList } from "../../components/audience-members-list";
 import { SyncIntegrationsModal } from "./components/sync-integrations-modal";
+import { CreateAudienceModal } from "./components/create-audience-modal";
 import useSWR from "swr";
 import { authenticatedFetcher } from "@/lib/fetch-utils";
 import { IAudience } from "@/models/audience";
@@ -54,7 +55,13 @@ export default function AudiencePage() {
             </h1>
             <p className="text-gray-600">{audience.description}</p>
           </div>
-          <SyncIntegrationsModal externalId={audience.externalId} />
+          <div className="flex gap-2">
+            <CreateAudienceModal />
+            <SyncIntegrationsModal
+              fbAudienceId={audience.fbAdAccountId}
+              fbAdAccountId={audience.fbAdAccountId}
+            />
+          </div>
         </div>
 
         <div className="grid gap-6">
@@ -85,13 +92,13 @@ export default function AudiencePage() {
                     : "Never"}
                 </dd>
               </div>
-              {audience.externalId && (
+              {audience.fbAudienceId && (
                 <div>
                   <dt className="text-sm font-medium text-gray-500">
                     Facebook Audience ID
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 font-mono font-bold">
-                    {audience.externalId}
+                    {audience.fbAudienceId}
                   </dd>
                 </div>
               )}

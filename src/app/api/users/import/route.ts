@@ -29,7 +29,7 @@ async function handler(request: NextRequest, auth: AuthCustomer) {
 
   const externalUsers = result.output.records as unknown as ExternalUser[];
 
-  await User.deleteMany({ customerId: auth.customerId });
+  await User.deleteMany({ integrationAppCustomerId: auth.customerId });
 
   const users = await User.create(
     externalUsers.map((extUser) => ({

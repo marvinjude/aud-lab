@@ -2,8 +2,12 @@ import { NextResponse } from "next/server";
 import { APIHandler } from "@/lib/api-middleware";
 import type { AuthCustomer } from "@/lib/auth";
 import { Audience } from "@/models/audience";
-import { getIntegrationClient } from "@/lib/integration-app-client";
-import { AudienceMember } from "@/models/audience-member";
+import { syncAudienceMembersToFbAudienceInBatch } from "@/lib/sync-utils";
+import { generateIntegrationTokenForUser } from "@/lib/integration-token";
+
+/////////////////
+// Types
+/////////////////
 
 interface SyncParams {
   params: {
@@ -11,6 +15,7 @@ interface SyncParams {
   };
   body?: {
     fbAudienceId: string;
+    fbAdAccountId: string;
   };
 }
 
@@ -28,12 +33,9 @@ interface FacebookErrorResponse {
   };
 }
 
-function simpleRandomUint64() {
-  return BigInt.asUintN(
-    64,
-    BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER))
-  );
-}
+////////////////////////
+// API Handler
+////////////////////////
 
 async function syncAudience(
   request: Request,
@@ -41,8 +43,7 @@ async function syncAudience(
   requestParams: SyncParams
 ) {
   const { id } = requestParams.params;
-  const { fbAudienceId } = requestParams.body || {};
-  const integrationApp = await getIntegrationClient(auth);
+  const { fbAudienceId, fbAdAccountId } = requestParams.body || {};
 
   if (!fbAudienceId) {
     return NextResponse.json(
@@ -51,49 +52,31 @@ async function syncAudience(
     );
   }
 
+  if (!fbAdAccountId) {
+    return NextResponse.json(
+      { error: "Facebook ad account ID is required" },
+      { status: 400 }
+    );
+  }
+
   const audience = await Audience.findByIdAndUpdate(
     id,
-    { externalId: fbAudienceId },
+    { fbAdAccountId, fbAudienceId, lastSyncedAt: new Date() },
     { new: true }
   );
 
   if (!audience) {
-    return NextResponse.json({ error: "Audience not found" }, { status: 404 });
+    throw new Error("Audience not found");
   }
 
-  const sessionId = simpleRandomUint64();
-
-  const audienceMembers = await AudienceMember.find({
-    audienceId: id,
-  });
-
-  const audienceMembersData = audienceMembers.map((member) => [
-    member.firstName,
-    member.lastName,
-    member.email,
-  ]);
-
-  /**
-   * See API docs on what session means: https://developers.facebook.com/docs/marketing-api/audiences/guides/custom-audiences/#payload-fields
-   * You'll need to keep track of the session ID yourself if you're doing this in batches.
-   */
-
-  const payload = {
-    audienceId: fbAudienceId,
-    data: audienceMembersData,
-    session: {
-      id: sessionId.toString(), // Unique identifier for the session
-      batchSeq: 1, // Sequence number of the batch
-      lastBatchFlag: true, // Indicates if this is the last batch of data
-    },
-  };
+  const userIntegrationAppToken = await generateIntegrationTokenForUser(auth);
 
   try {
-    await integrationApp
-      .connection("facebook-ads")
-      .action("replace-user-in-audience")
-      .run(payload);
-
+    await syncAudienceMembersToFbAudienceInBatch(
+      id,
+      fbAudienceId,
+      userIntegrationAppToken
+    );
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error: unknown) {
     const fbError = error as FacebookErrorResponse;

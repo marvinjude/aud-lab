@@ -3,8 +3,6 @@
 import type { Integration as IntegrationAppIntegration } from "@integration-app/sdk";
 import { Button } from "@/components/ui/button";
 import { useIntegrationConnection } from "@/hooks/use-integration-connection";
-import { useIntegrationApp } from '@integration-app/react';
-
 interface IntegrationListItemProps {
   integration: IntegrationAppIntegration;
   onRefresh: () => void;
@@ -14,22 +12,11 @@ export function IntegrationListItem({
   integration,
   onRefresh,
 }: IntegrationListItemProps) {
-  const client = useIntegrationApp();
-
-  const { handleConnect, handleDisconnect, isConnected } = useIntegrationConnection({
-    integration,
-    onRefresh,
-  });
-
-
-  const configure = async (key: string | undefined) => {
-    if (!key) return;
-    
-    await client
-      .connection(key)
-      .dataSource('audience')
-      .openConfiguration()
-  }
+  const { handleConnect, handleDisconnect, isConnected } =
+    useIntegrationConnection({
+      integration,
+      onRefresh,
+    });
 
   return (
     <li className="group flex items-center space-x-4 p-4 bg-white rounded-lg border">
@@ -53,14 +40,11 @@ export function IntegrationListItem({
         </h3>
       </div>
       <div className="flex space-x-2">
-        <Button onClick={() => configure(integration.connection?.id)}>
-          Configure
-        </Button>
         <Button
           onClick={() => (isConnected ? handleDisconnect() : handleConnect())}
           className={`px-4 py-2 rounded-md font-medium transition-colors ${isConnected
-            ? "bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-800"
-            : "bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-700"
+              ? "bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-800"
+              : "bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-700"
             }`}
         >
           {isConnected ? "Disconnect" : "Connect"}

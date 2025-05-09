@@ -1,94 +1,68 @@
-# Integration Use Case Template
+## Push Audience data from your app to Facebook Ads
 
-This is a template for an application showcasing integration capabilities using [Integration.app](https://integration.app). The app is built with Next.js and demonstrates how to implement user authentication and integration token generation.
-
-## Prerequisites
-
-- Node.js 18+ installed
-- Integration.app workspace credentials (Workspace Key and Secret)
-
-## Setup
-
-1. Clone the repository:
-
-```bash
-git clone <repository-url>
-cd <repository-name>
-```
-
-2. Install dependencies:
+### Development
 
 ```bash
 npm install
-# or
-yarn install
 ```
-
-3. Set up environment variables:
-
-```bash
-# Copy the sample environment file
-cp .env-sample .env
-```
-
-4. Edit `.env` and add your Integration.app credentials:
-
-```env
-INTEGRATION_APP_WORKSPACE_KEY=your_workspace_key_here
-INTEGRATION_APP_WORKSPACE_SECRET=your_workspace_secret_here
-MONGODB_URI=your_mongodb_connection_string
-```
-
-You can find these credentials in your Integration.app workspace settings.
-
-## Running the Application
-
-1. Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
 ```
 
-2. Open [http://localhost:3000](http://localhost:3000) in your browser.
+## Environment Variables
 
-## Project Structure
+Grab integration.app workspace credentials from your workspace [settings page](https://console.integration.app/w/0/settings/general).
 
-- `/src/app` - Next.js app router pages and API routes
-  - `/api` - Backend API routes for users and integration token management
-- `/src/components` - Reusable React components
-- `/src/lib` - Utility functions and helpers
-- `/src/models` - Data models and types
-- `/public` - Static assets
+Add the following to your `.env` file:
 
-## Template Features
+```
 
-### Authentication
+INTEGRATION_APP_WORKSPACE_KEY=YOUR_WORKSPACE_KEY
+INTEGRATION_APP_WORKSPACE_SECRET=YOUR_WORKSPACE_SECRET
 
-The template implements a simple authentication mechanism using a randomly generated UUID as the customer ID. This simulates a real-world scenario where your application would have proper user authentication. The customer ID is used to:
+MONGODB_URI=mongodb://localhost:27017/aud-lab
 
-- Identify the user/customer in the integration platform
-- Generate integration tokens for external app connections
-- Associate imported data with specific customers
+```
 
-### Users Example
+### How it works
 
-The template includes a complete example of importing and managing users from an external application:
+At its core this is a simple app with audiences and members. Using integration app, we are able to push members/users in an audience to facebook Ad Platform.
 
-- User data model and TypeScript types
-- API routes for user import and retrieval
-- React components for displaying user data
-- Integration with SWR for efficient data fetching
-- Example of using the Integration.app client for data import
+Your integration app workspace already has several actions that make this work:
 
-## Available Scripts
+- _list-ad-accounts_: list all ad accounts
+- _create-users-in-audience_: create users in an audience
+- _create-custom-audience_: create a custom audience
+- _replace-users-in-audience_: replace users in an audience
+- _list-custom-audiences_: list all your custom audiences on facebook
 
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Build the application for production
-- `npm run start` - Start the production server
-- `npm run lint` - Run ESLint to check code quality
+You can search the codebase for these actions to see how they work.
 
-## License
+### Syncing to Audience
 
-MIT
+The replace-user-in-audience and create-users-in-audience actions are used to add users to an audience and they have the same signature.
+
+Both actions use the same payload structure:
+
+```typescript
+interface SyncPayload {
+  audienceId: string; // Facebook audience ID
+  data: UserData[]; // Array of user data to sync
+  session: {
+    id: string; // Unique session identifier
+    batchSeq: number; // Current batch number
+    lastBatchFlag: boolean; // Indicates if this is the final batch
+  };
+}
+```
+
+in this POC, we are fetching data in batch of 100 from our database and we are using the sessionId to track the process.
+
+```js
+const sessionId = simpleRandomUint64();
+```
+
+### Automated sync
+
+If you decide to do the sync with a cron job, we've added a function called `periodicSyncForAllUsers` to the `lib/periodicSync.ts` as an example.

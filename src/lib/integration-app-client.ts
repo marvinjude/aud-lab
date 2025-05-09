@@ -1,5 +1,5 @@
 import { IntegrationAppClient } from "@integration-app/sdk";
-import { generateIntegrationToken } from "./integration-token";
+import { generateIntegrationTokenForUser } from "./integration-token";
 import type { AuthCustomer } from "./auth";
 
 let clientInstance: IntegrationAppClient | null = null;
@@ -16,7 +16,7 @@ export async function getIntegrationClient(
 ): Promise<IntegrationAppClient> {
   try {
     // Generate a fresh token for the customer
-    const token = await generateIntegrationToken(auth);
+    const token = await generateIntegrationTokenForUser(auth);
 
     // Create a new client instance with the fresh token
     // We create a new instance each time to ensure we're using a fresh token

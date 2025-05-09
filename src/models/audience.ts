@@ -8,8 +8,9 @@ export interface IAudience {
   memberCount: number;
   createdAt: Date;
   updatedAt: Date;
-  externalId?: string;
-  userId?: string;
+  fbAdAccountId?: string;
+  fbAudienceId?: string;
+  userId: string;
   lastSyncedAt?: Date;
 }
 
@@ -29,10 +30,11 @@ const audienceSchema = new mongoose.Schema<IAudience>(
       required: true,
       default: 0,
     },
-    externalId: {
+    fbAdAccountId: {
       type: String,
-      unique: true,
-      sparse: true,
+    },
+    fbAudienceId: {
+      type: String,
     },
     userId: {
       type: String,

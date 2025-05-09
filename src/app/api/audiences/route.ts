@@ -1,20 +1,26 @@
 import { NextResponse } from "next/server";
 import { Audience } from "@/models/audience";
 import { APIHandler } from "@/lib/api-middleware";
-import type { AuthCustomer } from "@/lib/auth";
-import { seedAudiencesAndMembers } from "@/seed";
+import { seedAudiencesAndMembers } from "@/lib/seed";
 
-async function getAudiences() {
-  // seed db
-  seedAudiencesAndMembers();
-
+export const GET = APIHandler(async function getAudiences(request, auth) {
   const audiences = await Audience.find({}).sort({
     createdAt: -1,
   });
-  return NextResponse.json(audiences);
-}
 
-export const GET = APIHandler(getAudiences);
+  if (audiences.length > 0) {
+    return NextResponse.json(audiences);
+  } else {
+    // Just for demo purposes
+    await seedAudiencesAndMembers(auth.customerId);
+
+    const audiences = await Audience.find({}).sort({
+      createdAt: -1,
+    });
+
+    return NextResponse.json(audiences);
+  }
+});
 
 export interface CreateParams {
   query?: Record<string, string>;
@@ -26,8 +32,8 @@ export interface CreateParams {
 }
 
 export const POST = APIHandler<CreateParams>(async function createAudience(
-  request: Request,
-  auth: AuthCustomer,
+  request,
+  auth,
   requestParams
 ) {
   const audience = await Audience.create({

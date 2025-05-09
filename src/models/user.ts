@@ -1,36 +1,29 @@
 import mongoose from "mongoose";
 
 export interface IUser {
-  userId: string;
-  userName: string | null;
-  customerId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  id: string;
+  name: string;
 }
 
 const userSchema = new mongoose.Schema<IUser>(
   {
-    userId: {
+    id: {
       type: String,
       required: true,
       unique: true,
-      trim: true,
     },
-    userName: {
+    name: {
       type: String,
       trim: true,
-      default: null,
-    },
-    customerId: {
-      type: String,
-      required: true,
-      trim: true,
-      index: true,
     },
   },
   {
     timestamps: true,
   }
 );
+
+if (mongoose.models.User) {
+  delete mongoose.models.User;
+}
 
 export const User = mongoose.model<IUser>("User", userSchema);

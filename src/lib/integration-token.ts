@@ -20,7 +20,7 @@ export class IntegrationTokenError extends Error {
   }
 }
 
-export async function generateIntegrationToken(
+export async function generateIntegrationTokenForUser(
   auth: AuthCustomer
 ): Promise<string> {
   if (!WORKSPACE_KEY || !WORKSPACE_SECRET) {

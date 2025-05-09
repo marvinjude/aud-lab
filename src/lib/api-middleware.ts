@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthFromRequest } from "./server-auth";
+import { getUserDataFromRequest } from "./server-auth";
 import type { AuthCustomer } from "./auth";
 import connectDB from "./mongodb";
+import { User } from "@/models/user";
 
 // Generic types for request parameters
 export interface RequestParams {
@@ -38,13 +39,24 @@ export function APIHandler<T extends RequestParams = RequestParams>(
     { params: routeParams }: { params: Promise<T["params"]> }
   ) => {
     try {
-      const auth = getAuthFromRequest(request);
+      const auth = getUserDataFromRequest(request);
 
       if (!auth.customerId) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
 
       await connectDB();
+
+      // We have a very loose authentication where we just pass in id an name as way to authenticate, now we need
+      // to check if the user exists in the database, if not we create a new user
+      const user = await User.findOne({ id: auth.customerId });
+
+      if (!user) {
+        await User.create({
+          id: auth.customerId,
+          name: auth.customerName,
+        });
+      }
 
       const searchParams = request.nextUrl.searchParams;
       const query = searchParams.get("query");
