@@ -25,6 +25,10 @@ MONGODB_URI=mongodb://localhost:27017/aud-lab
 
 ```
 
+## Add App Oauth Credentials
+
+Go to Apps > Facebook Ads Then add your app credentials to the `oauth` section of the app. See [Facebook Ad Integration Guide](https://console.integration.app/w/0/external-apps/integrations/67fb377f6d23e22e1c720952/connector/docs/configuration) for details on how to create those.
+
 ### How it works
 
 At its core this is a simple app with audiences and members. Using integration app, we are able to push members/users in an audience to facebook Ad Platform.
